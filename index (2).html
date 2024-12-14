@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048遊戲</title>
+    <style>
+        /* 前面的 CSS 保持不變 */
+
+        .tile {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: calc(var(--cell-size) * 0.4);
+            font-weight: bold;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+            animation: appear 0.2s ease;
+        }
+
+        @keyframes appear {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .tile.merge {
+            animation: merge 0.2s ease;
+        }
+
+        @keyframes merge {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .tile.move-left {
+            animation: moveLeft 0.15s ease;
+        }
+        .tile.move-right {
+            animation: moveRight 0.15s ease;
+        }
+        .tile.move-up {
+            animation: moveUp 0.15s ease;
+        }
+        .tile.move-down {
+            animation: moveDown 0.15s ease;
+        }
+
+        @keyframes moveLeft {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes moveRight {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes moveUp {
+            0% { transform: translateY(100%); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes moveDown {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(0); }
+        }
+
+        /* 其他 CSS 保持不變 */
+    </style>
+</head>
+<body>
+    <!-- HTML 部分保持不變 -->
+
+    <script>
+        // 前面的 JavaScript 保持不變，修改 updateDisplay 函數
+
+        function updateDisplay() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    
+                    if (board[i][j] !== 0) {
+                        const tile = document.createElement('div');
+                        tile.className = `tile tile-${board[i][j]}`;
+                        tile.textContent = board[i][j];
+
+                        // 根據移動方向添加動畫類
+                        if (board[i][j] !== prevBoard[i][j]) {
+                            if (lastMove === 'left') tile.classList.add('move-left');
+                            if (lastMove === 'right') tile.classList.add('move-right');
+                            if (lastMove === 'up') tile.classList.add('move-up');
+                            if (lastMove === 'down') tile.classList.add('move-down');
+
+                            // 如果是合併的數字，添加合併動畫
+                            if (prevBoard[i][j] !== 0 && board[i][j] === prevBoard[i][j] * 2) {
+                                tile.classList.add('merge');
+                            }
+                        }
+
+                        cell.appendChild(tile);
+                    }
+                    
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        let prevBoard = [];
+        let lastMove = '';
+
+        function move(direction) {
+            prevBoard = JSON.parse(JSON.stringify(board));
+            lastMove = direction;
+            
+            let moved = false;
+            const oldBoard = JSON.parse(JSON.stringify(board));
+
+            // 移動邏輯保持不變...
+
+            moved = JSON.stringify(oldBoard) !== JSON.stringify(board);
+            
+            if (moved) {
+                addNewTile();
+                document.getElementById('score').textContent = score;
+            }
+        }
+
+        // 初始化時設置 prevBoard
+        function initGame() {
+            board = [];
+            prevBoard = [];
+            score = 0;
+            document.getElementById('score').textContent = '0';
+            
+            for (let i = 0; i < size; i++) {
+                board[i] = [];
+                prevBoard[i] = [];
+                for (let j = 0; j < size; j++) {
+                    board[i][j] = 0;
+                    prevBoard[i][j] = 0;
+                }
+            }
+
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    gameBoard.appendChild(cell);
+                }
+            }
+
+            resizeGame();
+            addNewTile();
+            addNewTile();
+        }
+
+        // 其他 JavaScript 保持不變
+    </script>
+</body>
+</html>
