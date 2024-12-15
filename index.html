@@ -87,7 +87,6 @@
             position: relative;
             width: var(--cell-size);
             height: var(--cell-size);
-            transition: transform 0.15s ease-in-out;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -101,21 +100,19 @@
             font-size: calc(var(--cell-size) * 0.4);
             font-weight: bold;
             border-radius: 6px;
-            transition: all 0.15s ease-in-out;
+            transition: transform 0.15s ease-out;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
             transform-origin: center;
             will-change: transform;
             backface-visibility: hidden;
+            animation: appear 0.2s ease-out;
+            transform: translate(0, 0) scale(1);
         }
-
         @keyframes appear {
             0% { 
                 opacity: 0; 
-                transform: scale(0.5); 
-            }
-            50% {
-                transform: scale(1.1);
+                transform: scale(0); 
             }
             100% { 
                 opacity: 1; 
@@ -123,110 +120,39 @@
             }
         }
 
-        @keyframes slideRight {
-            from { 
-                transform: translateX(-100%);
-                opacity: 0.8;
-            }
-            to { 
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideLeft {
-            from { 
-                transform: translateX(100%);
-                opacity: 0.8;
-            }
-            to { 
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            from { 
-                transform: translateY(100%);
-                opacity: 0.8;
-            }
-            to { 
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideDown {
-            from { 
-                transform: translateY(-100%);
-                opacity: 0.8;
-            }
-            to { 
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
         @keyframes merge {
-            0% { 
-                transform: scale(1);
-            }
-            50% { 
-                transform: scale(1.1);
-            }
-            100% { 
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        .slide-right { 
-            animation: slideRight 0.2s ease-out;
-            transform-origin: left center;
+        .merge {
+            animation: merge 0.15s ease-in-out;
         }
-        .slide-left { 
-            animation: slideLeft 0.2s ease-out;
-            transform-origin: right center;
-        }
-        .slide-up { 
-            animation: slideUp 0.2s ease-out;
-            transform-origin: center bottom;
-        }
-        .slide-down { 
-            animation: slideDown 0.2s ease-out;
-            transform-origin: center top;
-        }
-        .merge { 
-            animation: merge 0.2s ease-in-out;
-        }
+
         .tile-2 { 
             background-color: #eee4da; 
             color: #776e65;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .tile-4 { 
             background-color: #ede0c8; 
             color: #776e65;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .tile-8 { 
             background-color: #f2b179; 
             color: #f9f6f2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
         .tile-16 { 
             background-color: #f59563; 
             color: #f9f6f2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
         .tile-32 { 
             background-color: #f67c5f; 
             color: #f9f6f2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         .tile-64 { 
             background-color: #f65e3b; 
             color: #f9f6f2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         .tile-128 { 
             background-color: #edcf72; 
@@ -290,8 +216,6 @@
             border: 2px solid #bbada0;
             border-radius: 6px;
             text-align: center;
-            transition: all 0.2s ease;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         input[type="number"]:focus {
@@ -316,7 +240,6 @@
             color: #776e65;
             border-radius: 8px;
             animation: fadeIn 0.5s ease-in-out;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         @keyframes fadeIn {
@@ -329,24 +252,11 @@
                 --cell-size: min(60vw / var(--grid-size), 60vh / var(--grid-size));
                 --cell-gap: min(1.5vw, 1.5vh);
             }
-
-            #controls {
-                margin: 10px;
-                padding: 10px;
-            }
-
-            #score-container {
-                margin: 5px;
-            }
         }
 
         @media (max-width: 480px) {
             :root {
                 --cell-size: min(80vw / var(--grid-size), 80vh / var(--grid-size));
-            }
-
-            .tile {
-                font-size: calc(var(--cell-size) * 0.35);
             }
 
             #controls {
@@ -373,9 +283,10 @@
         let size = 4;
         let board = [];
         let score = 0;
-        let lastMoveDirection = '';
         let mergedTiles = [];
         let animationInProgress = false;
+        let lastMoveTime = 0;
+        const moveDelay = 150; // 移動延遲時間（毫秒）
 
         // 滑鼠/觸控事件變數
         let startX, startY, endX, endY;
@@ -394,7 +305,6 @@
         function initGame() {
             board = [];
             score = 0;
-            lastMoveDirection = '';
             mergedTiles = [];
             animationInProgress = false;
             document.getElementById('score').textContent = '0';
@@ -451,10 +361,6 @@
                         tile.className = `tile tile-${board[i][j]}`;
                         tile.textContent = board[i][j];
 
-                        if (lastMoveDirection) {
-                            tile.classList.add(`slide-${lastMoveDirection}`);
-                        }
-
                         if (mergedTiles.some(pos => pos.x === i && pos.y === j)) {
                             tile.classList.add('merge');
                         }
@@ -467,12 +373,14 @@
             }
         }
         async function move(direction) {
-            if (animationInProgress) return;
+            const currentTime = Date.now();
+            if (animationInProgress || currentTime - lastMoveTime < moveDelay) return;
+            
             animationInProgress = true;
+            lastMoveTime = currentTime;
 
             let moved = false;
             const oldBoard = JSON.parse(JSON.stringify(board));
-            lastMoveDirection = direction;
             mergedTiles = [];
 
             function compress(line) {
@@ -530,43 +438,30 @@
             moved = JSON.stringify(oldBoard) !== JSON.stringify(board);
 
             if (moved) {
-                addNewTile();
-                updateDisplay();
-                document.getElementById('score').textContent = score;
-                
-                await new Promise(resolve => setTimeout(resolve, 200));
+                requestAnimationFrame(() => {
+                    addNewTile();
+                    updateDisplay();
+                    document.getElementById('score').textContent = score;
+                });
+
+                await new Promise(resolve => setTimeout(resolve, moveDelay));
 
                 if (isGameOver()) {
                     showGameOver();
                 }
             }
 
-            setTimeout(() => {
-                lastMoveDirection = '';
-                mergedTiles = [];
-                animationInProgress = false;
-            }, 300);
+            animationInProgress = false;
         }
 
         function isGameOver() {
             for (let i = 0; i < size; i++) {
                 for (let j = 0; j < size; j++) {
                     if (board[i][j] === 0) return false;
+                    if (j < size - 1 && board[i][j] === board[i][j + 1]) return false;
+                    if (i < size - 1 && board[i][j] === board[i + 1][j]) return false;
                 }
             }
-
-            for (let i = 0; i < size; i++) {
-                for (let j = 0; j < size - 1; j++) {
-                    if (board[i][j] === board[i][j + 1]) return false;
-                }
-            }
-
-            for (let i = 0; i < size - 1; i++) {
-                for (let j = 0; j < size; j++) {
-                    if (board[i][j] === board[i + 1][j]) return false;
-                }
-            }
-
             return true;
         }
 
@@ -586,10 +481,10 @@
             } else if (event.type === 'touchstart') {
                 startX = event.touches[0].clientX;
                 startY = event.touches[0].clientY;
-                event.preventDefault();
             }
             endX = startX;
             endY = startY;
+            event.preventDefault();
         }
 
         function handleTouchMove(event) {
@@ -601,8 +496,8 @@
             } else if (event.type === 'touchmove') {
                 endX = event.touches[0].clientX;
                 endY = event.touches[0].clientY;
-                event.preventDefault();
             }
+            event.preventDefault();
         }
 
         function handleTouchEnd(event) {
@@ -624,7 +519,7 @@
         }
 
         // 事件監聽器
-        document.addEventListener('keydown', function(event) {
+        const keyHandler = (event) => {
             if (animationInProgress) return;
             
             switch(event.key) {
@@ -645,15 +540,17 @@
                     move('down');
                     break;
             }
-        });
+        };
+
+        document.addEventListener('keydown', keyHandler);
 
         const gameBoard = document.getElementById('game-board');
         gameBoard.addEventListener('mousedown', handleTouchStart);
         gameBoard.addEventListener('mousemove', handleTouchMove);
         gameBoard.addEventListener('mouseup', handleTouchEnd);
         gameBoard.addEventListener('mouseleave', handleTouchEnd);
-        gameBoard.addEventListener('touchstart', handleTouchStart);
-        gameBoard.addEventListener('touchmove', handleTouchMove);
+        gameBoard.addEventListener('touchstart', handleTouchStart, {passive: false});
+        gameBoard.addEventListener('touchmove', handleTouchMove, {passive: false});
         gameBoard.addEventListener('touchend', handleTouchEnd);
 
         document.getElementById('grid-size').addEventListener('change', updateGridSize);
