@@ -7,38 +7,60 @@
     <style>
         :root {
             --grid-size: 4;
-            --cell-size: 20vmin;
-            --cell-gap: 2vmin;
+            --cell-size: min(70vw / var(--grid-size), 70vh / var(--grid-size));
+            --cell-gap: min(2vw, 2vh);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             background-color: #faf8ef;
             font-family: Arial, sans-serif;
-            margin: 0;
+            min-height: 100vh;
             padding: 20px;
+            overflow: hidden;
         }
 
         #controls {
-            margin: 20px;
+            margin: min(20px, 3vh);
             display: flex;
-            gap: 20px;
+            gap: min(20px, 3vw);
             align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: min(15px, 2vh);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: min(90vw, 400px);
+            justify-content: center;
         }
 
         #game-container {
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            gap: min(20px, 3vh);
+            width: 100%;
+            max-width: 90vw;
         }
 
         #score-container {
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: clamp(16px, 4vw, 28px);
             color: #776e65;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: min(10px, 1.5vh) min(20px, 3vw);
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #game-board {
@@ -46,7 +68,7 @@
             gap: var(--cell-gap);
             background-color: #bbada0;
             padding: var(--cell-gap);
-            border-radius: 8px;
+            border-radius: 12px;
             position: relative;
             touch-action: none;
             user-select: none;
@@ -54,14 +76,19 @@
             -moz-user-select: none;
             -ms-user-select: none;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: fit-content;
+            margin: auto;
         }
 
         .grid-cell {
             background-color: rgba(238, 228, 218, 0.35);
-            border-radius: 3px;
+            border-radius: 6px;
             position: relative;
             width: var(--cell-size);
             height: var(--cell-size);
+            transition: transform 0.15s ease-in-out;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .tile {
@@ -73,102 +100,204 @@
             align-items: center;
             font-size: calc(var(--cell-size) * 0.4);
             font-weight: bold;
-            border-radius: 3px;
-            transition: transform 0.15s ease-in-out;
-            animation: appear 0.2s ease;
+            border-radius: 6px;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            transform-origin: center;
+            will-change: transform;
+            backface-visibility: hidden;
         }
 
         @keyframes appear {
-            0% { opacity: 0; transform: scale(0); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { 
+                opacity: 0; 
+                transform: scale(0.5); 
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
         }
 
         @keyframes slideRight {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
+            from { 
+                transform: translateX(-100%);
+                opacity: 0.8;
+            }
+            to { 
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @keyframes slideLeft {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+            from { 
+                transform: translateX(100%);
+                opacity: 0.8;
+            }
+            to { 
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from { 
+                transform: translateY(100%);
+                opacity: 0.8;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
+            from { 
+                transform: translateY(-100%);
+                opacity: 0.8;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes merge {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% { 
+                transform: scale(1);
+            }
+            50% { 
+                transform: scale(1.1);
+            }
+            100% { 
+                transform: scale(1);
+            }
         }
 
-        .slide-right { animation: slideRight 0.15s ease-in-out; }
-        .slide-left { animation: slideLeft 0.15s ease-in-out; }
-        .slide-up { animation: slideUp 0.15s ease-in-out; }
-        .slide-down { animation: slideDown 0.15s ease-in-out; }
-        .merge { animation: merge 0.2s ease-in-out; }
-
-        .tile-2 { background-color: #eee4da; color: #776e65; }
-        .tile-4 { background-color: #ede0c8; color: #776e65; }
-        .tile-8 { background-color: #f2b179; color: #f9f6f2; }
-        .tile-16 { background-color: #f59563; color: #f9f6f2; }
-        .tile-32 { background-color: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background-color: #f65e3b; color: #f9f6f2; }
+        .slide-right { 
+            animation: slideRight 0.2s ease-out;
+            transform-origin: left center;
+        }
+        .slide-left { 
+            animation: slideLeft 0.2s ease-out;
+            transform-origin: right center;
+        }
+        .slide-up { 
+            animation: slideUp 0.2s ease-out;
+            transform-origin: center bottom;
+        }
+        .slide-down { 
+            animation: slideDown 0.2s ease-out;
+            transform-origin: center top;
+        }
+        .merge { 
+            animation: merge 0.2s ease-in-out;
+        }
+        .tile-2 { 
+            background-color: #eee4da; 
+            color: #776e65;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .tile-4 { 
+            background-color: #ede0c8; 
+            color: #776e65;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .tile-8 { 
+            background-color: #f2b179; 
+            color: #f9f6f2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .tile-16 { 
+            background-color: #f59563; 
+            color: #f9f6f2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .tile-32 { 
+            background-color: #f67c5f; 
+            color: #f9f6f2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .tile-64 { 
+            background-color: #f65e3b; 
+            color: #f9f6f2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
         .tile-128 { 
             background-color: #edcf72; 
             color: #f9f6f2;
             font-size: calc(var(--cell-size) * 0.35);
+            box-shadow: 0 2px 8px rgba(243, 215, 116, 0.3);
         }
         .tile-256 { 
             background-color: #edcc61; 
             color: #f9f6f2;
             font-size: calc(var(--cell-size) * 0.35);
+            box-shadow: 0 2px 8px rgba(243, 215, 116, 0.4);
         }
         .tile-512 { 
             background-color: #edc850; 
             color: #f9f6f2;
             font-size: calc(var(--cell-size) * 0.35);
+            box-shadow: 0 2px 8px rgba(243, 215, 116, 0.5);
         }
         .tile-1024 { 
             background-color: #edc53f; 
             color: #f9f6f2;
             font-size: calc(var(--cell-size) * 0.3);
+            box-shadow: 0 2px 8px rgba(243, 215, 116, 0.6);
         }
         .tile-2048 { 
             background-color: #edc22e; 
             color: #f9f6f2;
             font-size: calc(var(--cell-size) * 0.3);
+            box-shadow: 0 2px 8px rgba(243, 215, 116, 0.7);
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: min(12px, 2vh) min(24px, 4vw);
+            font-size: clamp(14px, 3vw, 18px);
             background-color: #8f7a66;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
         }
 
         button:hover {
             background-color: #9f8b77;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            font-size: 16px;
+            width: min(60px, 15vw);
+            padding: min(8px, 1.5vh);
+            font-size: clamp(14px, 3vw, 16px);
             border: 2px solid #bbada0;
-            border-radius: 3px;
+            border-radius: 6px;
             text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #8f7a66;
+            box-shadow: 0 0 5px rgba(143, 122, 102, 0.5);
         }
 
         .game-over {
@@ -177,19 +306,57 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(238, 228, 218, 0.73);
+            background: rgba(238, 228, 218, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 3em;
+            font-size: clamp(24px, 8vw, 48px);
             font-weight: bold;
             color: #776e65;
             border-radius: 8px;
+            animation: fadeIn 0.5s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --cell-size: min(60vw / var(--grid-size), 60vh / var(--grid-size));
+                --cell-gap: min(1.5vw, 1.5vh);
+            }
+
+            #controls {
+                margin: 10px;
+                padding: 10px;
+            }
+
+            #score-container {
+                margin: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --cell-size: min(80vw / var(--grid-size), 80vh / var(--grid-size));
+            }
+
+            .tile {
+                font-size: calc(var(--cell-size) * 0.35);
+            }
+
+            #controls {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
-<body></body>
+<body>
     <div id="controls">
         <div>
             <label for="grid-size">格子大小：</label>
@@ -208,6 +375,7 @@
         let score = 0;
         let lastMoveDirection = '';
         let mergedTiles = [];
+        let animationInProgress = false;
 
         // 滑鼠/觸控事件變數
         let startX, startY, endX, endY;
@@ -219,9 +387,6 @@
             if (newSize >= 3 && newSize <= 8) {
                 size = newSize;
                 document.documentElement.style.setProperty('--grid-size', size);
-                const gameBoard = document.getElementById('game-board');
-                gameBoard.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
-                gameBoard.style.gridTemplateRows = `repeat(${size}, var(--cell-size))`;
                 initGame();
             }
         }
@@ -231,6 +396,7 @@
             score = 0;
             lastMoveDirection = '';
             mergedTiles = [];
+            animationInProgress = false;
             document.getElementById('score').textContent = '0';
             
             for (let i = 0; i < size; i++) {
@@ -300,8 +466,10 @@
                 }
             }
         }
+        async function move(direction) {
+            if (animationInProgress) return;
+            animationInProgress = true;
 
-        function move(direction) {
             let moved = false;
             const oldBoard = JSON.parse(JSON.stringify(board));
             lastMoveDirection = direction;
@@ -326,13 +494,9 @@
                         score += line[i];
                         line[i + 1] = 0;
                         
-                        // 記錄合併位置
-                        if (isColumn) {
-                            mergedTiles.push({x: i, y: rowIndex});
-                        } else {
-                            mergedTiles.push({x: rowIndex, y: i});
-                        }
-                        i++;
+                        const mergeX = isColumn ? i : rowIndex;
+                        const mergeY = isColumn ? rowIndex : i;
+                        mergedTiles.push({x: mergeX, y: mergeY});
                     }
                 }
 
@@ -353,15 +517,10 @@
                 }
             } else {
                 for (let j = 0; j < size; j++) {
-                    let column = [];
-                    for (let i = 0; i < size; i++) {
-                        column.push(board[i][j]);
-                    }
-                    
+                    let column = board.map(row => row[j]);
                     column = compress(column);
                     column = merge(column, j, true);
                     column = compress(column);
-
                     for (let i = 0; i < size; i++) {
                         board[i][j] = column[i];
                     }
@@ -375,6 +534,8 @@
                 updateDisplay();
                 document.getElementById('score').textContent = score;
                 
+                await new Promise(resolve => setTimeout(resolve, 200));
+
                 if (isGameOver()) {
                     showGameOver();
                 }
@@ -383,7 +544,8 @@
             setTimeout(() => {
                 lastMoveDirection = '';
                 mergedTiles = [];
-            }, 150);
+                animationInProgress = false;
+            }, 300);
         }
 
         function isGameOver() {
@@ -415,8 +577,8 @@
             document.getElementById('game-board').appendChild(gameOver);
         }
 
-        // 滑鼠/觸控事件處理
         function handleTouchStart(event) {
+            if (animationInProgress) return;
             isDragging = true;
             if (event.type === 'mousedown') {
                 startX = event.clientX;
@@ -431,7 +593,7 @@
         }
 
         function handleTouchMove(event) {
-            if (!isDragging) return;
+            if (!isDragging || animationInProgress) return;
             
             if (event.type === 'mousemove') {
                 endX = event.clientX;
@@ -444,7 +606,7 @@
         }
 
         function handleTouchEnd(event) {
-            if (!isDragging) return;
+            if (!isDragging || animationInProgress) return;
             isDragging = false;
 
             const deltaX = endX - startX;
@@ -463,6 +625,8 @@
 
         // 事件監聽器
         document.addEventListener('keydown', function(event) {
+            if (animationInProgress) return;
+            
             switch(event.key) {
                 case 'ArrowLeft':
                     event.preventDefault();
